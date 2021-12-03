@@ -8,7 +8,7 @@
 	local x2 = 0
     local y2 = 0
     local aim = 0
-	for i = 0,#lines do
+	for i = 1,#lines do
 		local line = lines[i]
 		if string.sub(line, 0, string.len("forward")) == "forward" then
 			local num = tonumber(string.sub(line, string.len("forward") + 1))

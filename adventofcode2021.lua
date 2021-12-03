@@ -2,6 +2,7 @@
 
 require("days/day1")
 require("days/day2")
+require("days/day3")
 
 function usage()
 	print("Usage:")
@@ -21,7 +22,7 @@ end
 
 function readLines(path)
 	local lines = {}
-	local i = 0
+	local i = 1
 	for line in io.lines(path) do 
 		lines[i] = line
 		i = i + 1
@@ -40,10 +41,11 @@ function header(day)
 end
 
 
-local MAXDAY = 2
+local MAXDAY = 3
 local days = {}
 days[1] = day1
 days[2] = day2
+days[3] = day3
 
 if #arg < 2 then
 	print(#arg)
@@ -73,7 +75,6 @@ else
 	header(day)
 	start = os.clock()
 	days[day](path)
-	
 	finish = os.clock()
-	print(string.format("Elapsed time: %d ms", (finish - start)*1000))
+	print(string.format("Elapsed time: %.2f ms", (finish - start)*1000))
 end
