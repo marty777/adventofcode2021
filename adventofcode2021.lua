@@ -3,10 +3,12 @@
 require("days/day1")
 require("days/day2")
 require("days/day3")
+require("days/day4")
 
-function usage()
+function usage(maxday)
 	print("Usage:")
 	print("lua adventofcode2021.lua [DAY] [INPUT FILE PATH]")
+	print(string.format("Available days: 1-%d",maxday))
 end
 
 -- just accepts 0 - 15 for standard and bright forground text colorCode
@@ -40,35 +42,34 @@ function header(day)
 	print(string.format("----------------------------------- DAY %d ---------------------------------"..(day < 10 and '-' or ''), day))
 end
 
-
-local MAXDAY = 3
 local days = {}
 days[1] = day1
 days[2] = day2
 days[3] = day3
+days[4] = day4
 
 if #arg < 2 then
 	print(#arg)
-	usage()
+	usage(#days)
 	os.exit()
 end
 
 local day = tonumber(arg[1]) 
 if day == null then
-	usage()
+	usage(#days)
 	os.exit()
 end
 local path = arg[2]
 
-if (day) > MAXDAY then
-	usage()
+if (day) > #days then
+	usage(#days)
 	os.exit()
 end
 
 -- test if data file exists at path
 local f = io.open(path,"r")
 if f == null then
-	usage()
+	usage(#days)
 	os.exit()
 else 
 	io.close(f)
