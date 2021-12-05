@@ -54,7 +54,7 @@
 	local numbers = {}
 	for str in string.gmatch(lines[1], "([^,]+)") do
 		table.insert(numbers, tonumber(str))
-    end
+	end
 	
 	local boards = {}
 	for i=3,#lines,6 do
@@ -68,7 +68,6 @@
 				table.insert(boards[#boards]['used'], false)
 			end
 		end
-		
 	end
 	
 	local number_index = 1
@@ -81,7 +80,7 @@
 			day4_mark(boards[i]['grid'], boards[i]['used'], number)
 		end
 		for i = 1,#boards do
-			if day4_winner(boards[i]['grid'], boards[i]['used']) and boards[i]['won'] == false then 
+			if boards[i]['won'] == false and day4_winner(boards[i]['grid'], boards[i]['used']) then 
 				boards[i]['won'] = true
 				winners = winners + 1
 				if winners == 1 then 
@@ -89,6 +88,7 @@
 				end
 				if winners == #boards then 
 					part2 = day4_score(boards[i]['grid'], boards[i]['used'], number)
+					break
 				end
 			end
 		end
