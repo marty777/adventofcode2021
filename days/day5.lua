@@ -8,7 +8,7 @@
 	return set[key] ~= nil
  end
  
- function day5(path) 
+ function day5(path)
 	local lines = readLines(path)
 	
 	
