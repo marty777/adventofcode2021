@@ -12,14 +12,9 @@
  
  function day6_part2(bins)
 	local new = bins[0]
-	bins[0] = bins[1]
-	bins[1] = bins[2]
-	bins[2] = bins[3]
-	bins[3] = bins[4]
-	bins[4] = bins[5]
-	bins[5] = bins[6]
-	bins[6] = bins[7]
-	bins[7] = bins[8]
+	for i = 0,7 do
+		bins[i] = bins[i+1]
+	end
 	bins[6] = bins[6] + new
 	bins[8] = new
  end
