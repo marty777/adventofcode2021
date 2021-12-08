@@ -154,7 +154,6 @@ end
 				result = result + j
 			end
 		end
-		print(result)
 		part2 = part2 + result
 		
 	end
