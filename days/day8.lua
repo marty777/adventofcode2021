@@ -89,7 +89,7 @@ end
 			end
 		end
 		
-		-- count frequency of each segment in the patterns for this line
+		-- count frequency of each segment in patterns
 		local counts = {}
 		for j = 1,#patterns do 
 			for k = 1,#chars do 
@@ -114,8 +114,8 @@ end
 			end
 		end
 		
-		-- knowing a, c each appears 8 times, but a is already known
-		-- leaving d and g at 7 appearences each
+		-- a, c each appears 8 times, but a is already known
+		-- leaving d and g at 7 appearances each
 		local d_g = {}
 		for j = 1, #chars do 
 			if map[chars[j]] == nil and counts[chars[j]] == 8 then
@@ -140,7 +140,7 @@ end
 		local d4 = day8_mapandsort(outputs[4], map)
 		
 		local result = 0
-		for j = 1,#digits do 
+		for j = 0,#digits do 
 			if d1 == digits[j] then 
 				result = result + j * 1000
 			end
@@ -154,9 +154,10 @@ end
 				result = result + j
 			end
 		end
+		print(result)
 		part2 = part2 + result
+		
 	end
-	
 	
 	print(string.format("Part 1: %d", part1))
 	print(string.format("Part 2: %d", part2))
