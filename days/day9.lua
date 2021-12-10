@@ -3,10 +3,6 @@ function day9_coord(x,y)
 	return string.format("%d,%d",x,y);
 end
 
-function day9_fill()
-
-end
-
  function day9(path) 
 	local lines = readLines(path)
 	
@@ -114,7 +110,9 @@ end
 	for i = 1,3 do 
 		part2 = part2 * basin_counts[i]
 	end
-		
+	
+	print("TEST", part2_scores[#part2_scores/2 - 1])
+	
 	print(string.format("Part 1: %d", part1))
 	print(string.format("Part 2: %d", part2))
  
