@@ -35,7 +35,6 @@ function day14(path)
 	local part1 = 0
 	local part2 = 1
 	
-	local cache = {}
 	local lo = -1
 	local hi = -1 
 	
