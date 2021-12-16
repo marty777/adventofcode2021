@@ -15,6 +15,7 @@ require("days/day12")
 require("days/day13")
 require("days/day14")
 require("days/day15")
+require("days/day16")
 
 function usage(maxday)
 	print("Usage:")
@@ -69,6 +70,7 @@ days[12] = day12
 days[13] = day13
 days[14] = day14
 days[15] = day15
+days[16] = day16
 
 if #arg < 2 then
 	print(#arg)

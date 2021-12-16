@@ -23,7 +23,7 @@ function day15_queue_insert(queue, val, dist)
 	table.insert(queue, i, entry)
 end
 
-function day15_djikstra(grid, width, height, dest_x, dest_y)
+function day15_dijkstra(grid, width, height, dest_x, dest_y)
 	local seen = {}
 	local queue = {}
 	local dists = {}
@@ -118,10 +118,10 @@ function day15(path)
 	end
 	
 	
-	local part1 = day15_djikstra(grid, width, height, width, height)
+	local part1 = day15_dijkstra(grid, width, height, width, height)
 	print(string.format("Part 1: %d", part1))
 	
-	local part2 = day15_djikstra(grid, width, height, width*5, height*5)
+	local part2 = day15_dijkstra(grid, width, height, width*5, height*5)
 	print(string.format("Part 2: %d", part2))
  
  end
