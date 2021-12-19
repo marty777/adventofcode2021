@@ -1,176 +1,213 @@
-function day18_magnitude(a)
-	local index = 1
-	local depth = 0
-	local number = tonumber(a)
-	if number ~= nil then 
-		return number
+
+function day18_string(node) 
+	local ret = "["
+	if node.left.value == nil then 
+		ret = ret .. day18_string(node.left)
+	else 
+		ret = ret .. string.format("%d", node.left.value)
 	end
-	while true do 
-		if string.sub(a, index, index) == '[' then 
-			depth = depth + 1
-		elseif string.sub(a,index,index) == ']' then 
-			depth = depth - 1
-		elseif string.sub(a,index,index) == ',' and depth == 1 then 
-			return (day18_magnitude(string.sub(a, 2, index-1)) * 3) + (day18_magnitude(string.sub(a, index+1, string.len(a) - 1)) * 2) 
-		end
-		index = index + 1
+	ret = ret .. ","
+	if node.right.value == nil  then 
+		ret = ret .. day18_string(node.right)
+	else 
+		ret = ret .. string.format("%d", node.right.value)
 	end
+	ret = ret .. "]"
+	return ret
 end
 
--- a bit of a mess, but it works
-function day18_reduce(a)
-	local explode = false
+function day18_magnitude(node) 
+	if node.value ~= nil then 
+		return node.value
+	end
+	return 3*day18_magnitude(node.left) + 2*day18_magnitude(node.right)
+end
+
+function day18_add(a,b) 
+	local node = {}
+	node.left = a
+	node.right = b 
+	node.left.parent = node
+	node.right.parent = node
+	node.value = nil
+	return node
+end
+
+function day18_explode(node, depth) 
+	if node.value ~= nil then 
+		return false 
+	end
+	if depth > 4 then 
+		-- if at leaves
+		if node.left.value ~= nil and node.right.value ~= nil then 
+			local leftval = node.left.value
+			local rightval = node.right.value
+			node.value = 0
+			node.left = nil
+			node.right = nil
+			-- move left
+			local upnode = node.parent 
+			local thisnode = node
+			while upnode ~= nil and thisnode == upnode.left do 
+				thisnode = upnode
+				upnode = thisnode.parent
+			end
+			if upnode ~= nil then 
+				local downnode = upnode.left
+				while downnode.value == nil do 
+					downnode = downnode.right
+				end 
+				downnode.value = downnode.value + leftval
+			end
+			-- move right
+			upnode = node.parent
+			thisnode = node 
+			while upnode ~= nil and thisnode == upnode.right do 
+				thisnode = upnode
+				upnode = thisnode.parent
+			end
+			if upnode ~= nil then 
+				local downnode = upnode.right
+				while downnode.value == nil do 
+					downnode = downnode.left
+				end 
+				downnode.value = downnode.value + rightval
+			end
+			return true
+		end
+	end
+	
+	local left = false
+	local right = false
+	if node.left.value == nil then 
+		left = day18_explode(node.left, depth + 1)
+	end
+	if left then 
+		return true 
+	end
+	if node.right.value == nil then 
+		right = day18_explode(node.right, depth + 1)
+	end 
+	return right
+	
+	--return false
+end
+
+function day18_split(node) 
 	local split = false
-	local depth = 0
-	local index = 1
-	-- explode pass
-	while index <= string.len(a) and not explode do  
-		if string.sub(a,index,index) == '[' then 
-			depth = depth + 1
-			local is_leaf = true
-			local index2 = index + 1
-			while(string.sub(a,index2,index2) ~= ']') do
-				if string.sub(a,index2,index2) == '[' then 
-					is_leaf = false
-					break
-				end
-				index2 = index2 + 1
-			end
-			if is_leaf and depth > 4 then 
-				explode = true
-				local comma = index+1
-				while string.sub(a,comma,comma) ~= ',' do 
-					comma = comma + 1
-				end
-				local left = tonumber(string.sub(a,index+1,comma-1))
-				local right = tonumber(string.sub(a,comma+1, index2-1))
-				
-				local right_index = index2 + 1
-				while true do 
-					if right_index == string.len(a) then
-						break
-					end
-					local chr = string.sub(a,right_index,right_index)
-					if chr ~= '[' and chr ~= ']' and chr ~= ',' then 
-						local right_index2 = right_index
-						local chr2 = string.sub(a, right_index2, right_index2)
-						while chr2 ~= '[' and chr2 ~= ']' and chr2 ~= ',' do
-							right_index2 = right_index2 + 1
-							chr2 = string.sub(a,right_index2, right_index2)
-						end
-						right_index2 = right_index2 - 1
-						local right_val = tonumber(string.sub(a, right_index, right_index2))
-						a = string.sub(a,1,right_index-1) .. (right + right_val) .. string.sub(a,right_index2 + 1)
-						break
-					end
-					right_index = right_index + 1
-				end
-				
-				a = string.sub(a, 1, index-1) .. '0' .. string.sub(a, index2 + 1)
-				
-				local left_index = index - 1
-				while true do 
-					
-					if left_index == 0 then
-						break
-					end
-					local chr = string.sub(a,left_index,left_index)
-					if chr ~= '[' and chr ~= ']' and chr ~= ',' then 
-						local left_index2 = left_index
-						local chr2 = string.sub(a, left_index2, left_index2)
-						while chr2 ~= '[' and chr2 ~= ']' and chr2 ~= ',' do
-							left_index2 = left_index2 - 1
-							chr2 = string.sub(a,left_index2, left_index2)
-						end
-						left_index2 = left_index2 + 1
-						local left_val = tonumber(string.sub(a, left_index2, left_index))
-						a = string.sub(a,1,left_index2-1) .. (left + left_val) .. string.sub(a,left_index + 1)
-						break
-					end
-					left_index = left_index - 1
-				end
-				
-			end 
-		elseif string.sub(a,index,index) == ']' then 
-			depth = depth - 1
+	if node.left.value ~= nil then
+		if  node.left.value > 9 then 
+			local leftval = node.left.value
+			node.left.value = nil
+			node.left.left = {}
+			node.left.right = {}
+			node.left.left.value = math.floor(leftval/2)
+			node.left.left.parent = node.left
+			node.left.right.value = math.ceil(leftval/2)
+			node.left.right.parent = node.left
+			return true
 		end
-		index = index + 1
-	end -- end explode pass
+	else 
+		local left = day18_split(node.left)
+		if left then 
+			return true 
+		end
+	end
 	
-	-- split pass
-	index = 1
-	depth = 0
-	while index <= string.len(a) and not explode and not split do  
-		if string.sub(a,index,index) == '[' then 
-			depth = depth + 1
-		elseif string.sub(a,index,index) == ']' then 
-			depth = depth - 1
-		elseif string.sub(a,index,index) ~= ',' then 
-			local index2 = index 
-			local chr = string.sub(a, index2, index2)
-			while chr ~= '[' and chr ~= ']' and chr ~= ',' do 
-				index2 = index2 + 1
-				chr = string.sub(a, index2, index2)
-			end
-			index2 = index2 - 1
-			local val = tonumber(string.sub(a, index, index2))
-			if val > 9 then 
-				a = string.sub(a, 1, index-1) .. '[' .. (math.floor(val/2)) .. ',' .. (math.ceil(val/2)) .. ']' .. string.sub(a, index2 +1)
-				split = true 
-				break
-			end
-		end		
-		index = index + 1
-	end -- end split pass
+	if node.right.value ~= nil then  
+		if node.right.value > 9 then 
+			local rightval = node.right.value
+			node.right.value = nil
+			node.right.left = {}
+			node.right.right = {}
+			node.right.left.value = math.floor(rightval/2)
+			node.right.left.parent = node.right
+			node.right.right.value = math.ceil(rightval/2)
+			node.right.right.parent = node.right
+			return true
+		end
+	else 
+		return day18_split(node.right)
+	end
 	
-	return a, (split or explode)	
+	
 end
 
-function day18_add(a,b)
-	local depth = 0
-	local index = 1
-	while index <= string.len(a) do 
-		if string.sub(a,index,index) == '[' then 
-			depth = depth + 1
-		elseif(string.sub(a,index,index) == ']') then 
-			if depth == 1 and string.sub(a,index,index) == ']' then 
-				local result = '['..a.."," .. b ..']'
-				return result
-			end
-			depth = depth - 1
-		end
-		
-		index = index + 1
+function day18_reduce(a)
+	local explode = day18_explode(a,1)
+	if explode then 
+		return true 
 	end
+	local split = day18_split(a)
+	return split
+end
+
+function day18_line(line)
+	local _,count = line:gsub(",","")
+	if( count == 0) then
+		local node = {}
+		node.left = nil
+		node.right = nil
+		node.value = tonumber(line)
+		node.parent = nil
+		return node
+	end
+	
+	local node = {}
+	local start = 1
+	local finish = 1
+	local mid = 1
+	local depth = 0
+	while finish < string.len(line) and depth >= 0  do
+		if string.sub(line, finish, finish) == '[' then 
+			depth = depth + 1
+		elseif string.sub(line, finish, finish) == ']' then 
+			depth = depth - 1
+		elseif string.sub(line, finish,finish) == ',' and depth == 1 then 
+			mid = finish
+		elseif string.sub(line, finish,finish) == ',' then 
+		end
+		finish = finish + 1
+	end
+	local node = {}
+	node.left = day18_line(string.sub(line, start+1, mid-1))
+	node.left.parent = node
+	node.right = day18_line(string.sub(line, mid+1, finish-1))
+	node.right.parent = node 
+	node.value = nil
+	node.parent = nil
+	return node
 end
 
 function day18(path) 
 	local lines = readLines(path)
 	
-	local totalfish = lines[1]
-	for i = 2,#lines do 
-		totalfish = day18_add(totalfish, lines[i])
-		while true do
-			local reduced = false
-			totalfish,reduced = day18_reduce(totalfish)
-			if not reduced then break end
+	local fishsum = day18_line(lines[1])
+	for i=2,#lines do 
+		fishsum = day18_add(fishsum, day18_line(lines[i]))
+		while true do 
+			if not day18_reduce(fishsum) then 
+				break
+			end
 		end
 	end
-	local part1 = day18_magnitude(totalfish)
+	
+	local part1 = day18_magnitude(fishsum)
 	print(string.format("Part 1: %d", part1))
 	
-	local part2 = 0
-	for i = 1,#lines do 
+	local part2 = nil
+	for i = 1,#lines do 	
 		for j = 1,#lines do 
-			if i ~= j then 
-				local fishsum = day18_add(lines[i],lines[j])
+			if j ~= i then 
+				local fishpair = day18_line(lines[i])
+				fishpair = day18_add(fishpair, day18_line(lines[j]))
 				while true do 
-					local reduced = false
-					fishsum,reduced = day18_reduce(fishsum)
-					if not reduced then break end
+					if not day18_reduce(fishpair) then 
+						break
+					end
 				end
-				local magnitude = day18_magnitude(fishsum)
-				if magnitude > part2 then 
+				local magnitude = day18_magnitude(fishpair)
+				if part2 == nil or magnitude > part2 then 
 					part2 = magnitude
 				end
 			end
@@ -178,6 +215,8 @@ function day18(path)
 	end
 	
 	print(string.format("Part 2: %d", part2))
- 
+	
+	
+	
  end
  
