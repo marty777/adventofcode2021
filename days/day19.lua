@@ -72,7 +72,7 @@ end
 -- given an undetermined scanner, try all rotations and attempt to match to beacons of known position
 function day19_scanner(scanners, beacons, index)
 	local vectors = {}
-	local cutoff = 6
+	local cutoff = 3 -- at 3 matches to known beacon positions, consider the beacon determined
 	local beaconslist = {}
 	for k,v in pairs(beacons) do
 		table.insert(beaconslist, v)
@@ -106,7 +106,7 @@ function day19_scanner(scanners, beacons, index)
 						if vectors[key][7] > match_hi then 
 							match_hi = vectors[key][7]
 						end
-						if match_hi > cutoff then 
+						if match_hi >= cutoff then 
 							found = true
 							break
 						end
@@ -126,7 +126,7 @@ function day19_scanner(scanners, beacons, index)
 		end 
 	end
 	
-	if max_match <= cutoff then 
+	if max_match < cutoff then 
 		return false
 	end
 	
