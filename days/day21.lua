@@ -7,12 +7,6 @@ function day21_mod(val, modulo)
 	return(((val - 1) % modulo) + 1)
 end
 
-function day21_dirac(roll) 
-	local rolls = {0,0,1,3,6,7,6,3,1}
-	return rolls[roll]
-end
-
-
 function day21(path) 
 	local lines = readLines(path)
 	
