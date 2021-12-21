@@ -49,14 +49,31 @@ function day21(path)
 	p1 = p1_start
 	p2 = p2_start
 	
+	-- for each state in a previous turn, play it forward for
+	-- all possible outcomes of both turns (3 dice 1-3 produces 
+	-- outcomes 3-9, with the number of possible distinct 
+	-- roles producing the outcome having the distribution 
+	-- given below. If neither player's turn results in 
+	-- a win, propagate the state to the next turn in the 
+	-- positions table, together with a sum of all possible
+	-- states leading to that position. Continue until 
+	-- no more non-win states occur.
 	local dirac = {0,0,1,3,6,7,6,3,1}
 	local positions = {}
+	local p1_win_count = 0
+	local p2_win_count = 0
 	positions[1] = {}
 	positions[1][day21_key(p1,0,p2,0,0)] = {p1,0,p2,0,1} 
-	-- turn pairs rather than turns
-	for turn = 2,20 do
-		positions[turn] = {}
-		for k,v in pairs(positions[turn-1]) do 
+	local new_position_count = 1
+	local round = 1
+	while true do 
+		if new_position_count < 1 then 
+			break
+		end
+		round = round + 1
+		positions[round] = {}
+		new_position_count = 0
+		for k,v in pairs(positions[round-1]) do 
 			local p1_t = v[1]
 			local p1_score_t = v[2]
 			local p2_t = v[3]
@@ -68,30 +85,21 @@ function day21(path)
 					local p1_t2 = day21_mod(p1_t + j, 10)
 					local p1_score_t2 = p1_score_t + p1_t2
 					if p1_score_t2 >= 21 then 
-						local p1_w_key = day21_key(0,0,0,0,1)
-						if positions[turn][p1_w_key] == nil then
-							positions[turn][p1_w_key] = {0,0,0,0,count_t * dirac[j]}
-						else 
-							positions[turn][p1_w_key][5] = positions[turn][p1_w_key][5] + (count_t * dirac[j])
-						end
+						p1_win_count = p1_win_count + (count_t * dirac[j]);
 					else 
 						for l = 3,9 do 
 							local p2_t2 = day21_mod(p2_t + l, 10)
 							local p2_score_t2 = p2_score_t + p2_t2
 							if p2_score_t2 >= 21 then 
-								local p2_w_key = day21_key(0,0,0,0,2)
-								if positions[turn][p2_w_key] == nil then
-									positions[turn][p2_w_key] = {0,0,0,0,count_t * dirac[j] * dirac[l]}
-								else 
-									positions[turn][p2_w_key][5] = positions[turn][p2_w_key][5] + (count_t * dirac[j] * dirac[l])
-								end
+								p2_win_count = p2_win_count + count_t * dirac[j] * dirac[l]
 							else 
-								-- not a win result
+								-- not a win result, propagate outcome
 								local positionkey = day21_key(p1_t2,p1_score_t2,p2_t2,p2_score_t2,0) 
-								if positions[turn][positionkey] == nil then 
-									positions[turn][positionkey] = {p1_t2, p1_score_t2, p2_t2, p2_score_t2, count_t * dirac[j] * dirac[l]}
+								if positions[round][positionkey] == nil then 
+									positions[round][positionkey] = {p1_t2, p1_score_t2, p2_t2, p2_score_t2, count_t * dirac[j] * dirac[l]}
+									new_position_count = new_position_count + 1
 								else 
-									positions[turn][positionkey][5] = positions[turn][positionkey][5] + (count_t * dirac[j] * dirac[l])
+									positions[round][positionkey][5] = positions[round][positionkey][5] + (count_t * dirac[j] * dirac[l])
 								end
 							end
 						end
@@ -99,28 +107,10 @@ function day21(path)
 				end 
 			end 
 		end
+		
 	end
 	
-	-- count up wins found in each turn
-	p1_count = 0
-	p2_count = 0
-	tie_count = 0
-	for i = 1,#positions do 
-		for j = 1,2 do 
-			local key = day21_key(0,0,0,0,j)
-			if positions[i][key] ~= nil then 
-				if j == 1 then 
-					p1_count = p1_count + positions[i][key][5]
-				else 
-					p2_count = p2_count + positions[i][key][5]
-				end
-			end
-		end
-	end
-	
-	local part2 =  p1_count > p2_count and p1_count or p2_count
-	
-	local board = {}
+	local part2 =  p1_win_count > p2_win_count and p1_win_count or p2_win_count
 	
 	print(string.format("Part 2: %d", part2))
  
