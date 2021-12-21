@@ -49,15 +49,18 @@ function day21(path)
 	p1 = p1_start
 	p2 = p2_start
 	
-	-- for each state in a previous turn, play it forward for
+	-- for each state in a previous round, play it forward for
 	-- all possible outcomes of both turns (3 dice 1-3 produces 
-	-- outcomes 3-9, with the number of possible distinct 
-	-- roles producing the outcome having the distribution 
-	-- given below. If neither player's turn results in 
+	-- outcomes 3-9, with the number of possible distinct rolls 
+	-- producing the outcome having the distribution given 
+	-- below). Add any win states to the total for the 
+	-- appropriate player. If neither player's turn results in 
 	-- a win, propagate the state to the next turn in the 
-	-- positions table, together with a sum of all possible
-	-- states leading to that position. Continue until 
-	-- no more non-win states occur.
+	-- positions table, together with a sum of all possible 
+	-- states leading to that position (the number of previous 
+	-- states producing that outcome multiplied by the number of 
+	-- possible rolls on the turn producing the outcome. Continue
+	-- until no more non-win states occur.
 	local dirac = {0,0,1,3,6,7,6,3,1}
 	local positions = {}
 	local p1_win_count = 0
@@ -107,7 +110,6 @@ function day21(path)
 				end 
 			end 
 		end
-		
 	end
 	
 	local part2 =  p1_win_count > p2_win_count and p1_win_count or p2_win_count
