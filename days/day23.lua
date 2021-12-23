@@ -53,11 +53,7 @@ function day23_copy_state(state)
 end
 
 function day23_state_key(state) 
-	local ret = ''
-	for i = 1, #state.positions do 
-		ret = ret .. state.positions[i]
-	end
-	return ret
+	return table.concat(state.positions, '')
 end
 
 function day23_coord_from_pos(pos) 
