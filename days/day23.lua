@@ -53,7 +53,39 @@ function day23_copy_state(state)
 end
 
 function day23_state_key(state) 
-	return table.concat(state.positions, '')
+	local result = 0
+	for i = 1,#state.positions do
+		local val = 0
+		if state.positions[i] == 'A' then 
+			val = 1
+		elseif state.positions[i] == 'B' then 
+			val = 2
+		elseif state.positions[i] == 'C' then 
+			val = 3
+		elseif state.positions[i] == 'D' then 
+			val = 4
+		end
+		result = result | (val << ((i-1) * 3))
+	end
+	return result
+end
+
+function day23_gen_key(str)
+	local result = 0
+	for i = 1,string.len(str) do
+		local val = 0
+		if string.sub(str,i,i) == 'A' then 
+			val = 1
+		elseif string.sub(str,i,i) == 'B' then 
+			val = 2
+		elseif string.sub(str,i,i) == 'C' then 
+			val = 3
+		elseif string.sub(str,i,i) == 'D' then 
+			val = 4
+		end
+		result = result | (val << (i-1) * 3)
+	end
+	return result
 end
 
 function day23_coord_from_pos(pos) 
@@ -92,7 +124,7 @@ function day23_occupied(x,y,state)
 end
 
 -- build a cache of all moves from all positions to all other positions
--- for faster evaluation day23_can_reach
+-- for faster evaluation of day23_can_reach
 function day23_movecache()
 	local movecache = {}
 	for i = 1,23 do 
@@ -223,9 +255,9 @@ end
 
 function day23_solve(state, movecache, part1)
 	
-	local finalkey = '.......ABCDABCD'
+	local finalkey = day23_gen_key('.......ABCDABCD')
 	if not part1 then 
-		finalkey = '.......ABCDABCDABCDABCD'
+		finalkey = day23_gen_key('.......ABCDABCDABCDABCD')
 	end
 	
 	local states = {}
