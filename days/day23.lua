@@ -1,41 +1,54 @@
 
+function day23_charval(chr) 
+	if chr == 'A' then 
+		return 1
+	elseif chr == 'B' then 
+		return 2 
+	elseif chr == 'C' then 
+		return 3
+	elseif chr == 'D' then 
+		return 4
+	end
+	return 0
+end
+
 function day23_init_state(positions, part1) 
 	local state = {}
 	state.part1 = part1
 	state.cost = 0
 	state.positions = {}
 	for i = 1,7 do 
-		table.insert(state.positions, '.')
+		table.insert(state.positions, 0)
 	end
 	if state.part1 then 
-		table.insert(state.positions, positions[1]) -- 8
-		table.insert(state.positions, positions[2]) -- 9
-		table.insert(state.positions, positions[3]) -- 10
-		table.insert(state.positions, positions[4]) -- 11
+		table.insert(state.positions, day23_charval(positions[1])) -- 8
+		table.insert(state.positions, day23_charval(positions[2])) -- 9
+		table.insert(state.positions, day23_charval(positions[3])) -- 10
+		table.insert(state.positions, day23_charval(positions[4])) -- 11
 		
-		table.insert(state.positions, positions[5]) -- 12
-		table.insert(state.positions, positions[6]) -- 13
-		table.insert(state.positions, positions[7]) -- 14
-		table.insert(state.positions, positions[8]) -- 15
+		table.insert(state.positions, day23_charval(positions[5])) -- 12
+		table.insert(state.positions, day23_charval(positions[6])) -- 13
+		table.insert(state.positions, day23_charval(positions[7])) -- 14
+		table.insert(state.positions, day23_charval(positions[8])) -- 15
 	else 
-		table.insert(state.positions, positions[1]) -- 8
-		table.insert(state.positions, positions[2]) -- 9
-		table.insert(state.positions, positions[3]) -- 10
-		table.insert(state.positions, positions[4]) -- 11
+		table.insert(state.positions, day23_charval(positions[1])) -- 8
+		table.insert(state.positions, day23_charval(positions[2])) -- 9
+		table.insert(state.positions, day23_charval(positions[3])) -- 10
+		table.insert(state.positions, day23_charval(positions[4])) -- 11
 		
-		table.insert(state.positions, 'D')
-		table.insert(state.positions, 'C')
-		table.insert(state.positions, 'B')
-		table.insert(state.positions, 'A')
-		table.insert(state.positions, 'D')
-		table.insert(state.positions, 'B')
-		table.insert(state.positions, 'A')
-		table.insert(state.positions, 'C')
+		table.insert(state.positions, day23_charval('D'))
+		table.insert(state.positions, day23_charval('C'))
+		table.insert(state.positions, day23_charval('B'))
+		table.insert(state.positions, day23_charval('A'))
+		table.insert(state.positions, day23_charval('D'))
+		table.insert(state.positions, day23_charval('B'))
+		table.insert(state.positions, day23_charval('A'))
+		table.insert(state.positions, day23_charval('C'))
 		
-		table.insert(state.positions, positions[5]) -- 20
-		table.insert(state.positions, positions[6]) -- 21
-		table.insert(state.positions, positions[7]) -- 22
-		table.insert(state.positions, positions[8]) -- 23
+		table.insert(state.positions, day23_charval(positions[5])) -- 20
+		table.insert(state.positions, day23_charval(positions[6])) -- 21
+		table.insert(state.positions, day23_charval(positions[7])) -- 22
+		table.insert(state.positions, day23_charval(positions[8])) -- 23
 	end
 	
 	return state
@@ -52,20 +65,32 @@ function day23_copy_state(state)
 	return state2
 end
 
+function day23_str_from_key(key)
+	local ret = ''
+	for i = 1,15 do 
+		local val = (key >> ((i-1) * 3)) & 0x7
+		if val == 0 then 
+			ret = ret .. '.'
+		elseif val == 1 then 
+			ret = ret .. 'A'
+		elseif val == 2 then 
+			ret = ret .. 'B'
+		elseif val == 3 then 
+			ret = ret .. 'C'
+		elseif val == 4 then 
+			ret = ret .. 'D'
+		else 
+			ret = ret .. 'X'
+		end
+	end
+	return ret
+end
+
 function day23_state_key(state) 
 	local result = 0
 	for i = 1,#state.positions do
-		local val = 0
-		if state.positions[i] == 'A' then 
-			val = 1
-		elseif state.positions[i] == 'B' then 
-			val = 2
-		elseif state.positions[i] == 'C' then 
-			val = 3
-		elseif state.positions[i] == 'D' then 
-			val = 4
-		end
-		result = result | (val << ((i-1) * 3))
+		local val = state.positions[i]
+		result = result | ((val & 0x7) << ((i-1) * 3))
 	end
 	return result
 end
@@ -83,7 +108,7 @@ function day23_gen_key(str)
 		elseif string.sub(str,i,i) == 'D' then 
 			val = 4
 		end
-		result = result | (val << (i-1) * 3)
+		result = result | (val << ((i-1) * 3))
 	end
 	return result
 end
@@ -107,12 +132,11 @@ function day23_pos_from_coord(x,y)
 end
 
 function day23_move(startpos, endpos, state) 
-	if state.positions[endpos] ~= '.' or state.positions[startpos] == '.' then 
+	if state.positions[endpos] ~= 0 or state.positions[startpos] == 0 then 
 		return false
 	end
-	local chr = state.positions[startpos]
 	state.positions[endpos] = state.positions[startpos]
-	state.positions[startpos] = '.'
+	state.positions[startpos] = 0
 	return true 
 end
 
@@ -120,11 +144,11 @@ function day23_occupied(x,y,state)
 	if y == 1 and (x == 3 or x == 5 or x == 7 or x == 9) then 
 		return false
 	end
-	return state.positions[day23_pos_from_coord(x,y)] ~= '.' 
+	return state.positions[day23_pos_from_coord(x,y)] ~= 0 
 end
 
 -- build a cache of all moves from all positions to all other positions
--- for faster evaluation of day23_can_reach
+-- for faster evaluation day23_can_reach
 function day23_movecache()
 	local movecache = {}
 	for i = 1,23 do 
@@ -193,20 +217,20 @@ function day23_moves(index, state, movecache)
 	local x,y = day23_coord_from_pos(index)
 	local me = state.positions[index]
 	local room_x = 0
-	if me == 'A' then 
+	if me == 1 then 
 		room_x = 3
-	elseif me == 'B' then 
+	elseif me == 2 then 
 		room_x = 5
-	elseif me == 'C' then 
+	elseif me == 3 then 
 		room_x = 7
-	elseif me == 'D' then 
+	elseif me == 4 then 
 		room_x = 9
 	end
 
 	local inroom_x = (room_x == x)
 	local okroom_x = true 
 	for y1 = 2,(state.part1 and 3 or 5) do 
-		if state.positions[day23_pos_from_coord(room_x,y1)] ~= '.' and  state.positions[day23_pos_from_coord(room_x,y1)] ~= me then 
+		if state.positions[day23_pos_from_coord(room_x,y1)] ~= 0 and  state.positions[day23_pos_from_coord(room_x,y1)] ~= me then 
 			okroom_x = false
 			break
 		end
@@ -223,7 +247,7 @@ function day23_moves(index, state, movecache)
 		dest_room_i = nil 
 	else 
 		while dest_room_i > 7 do 
-			if state.positions[dest_room_i] ~= '.' then 
+			if state.positions[dest_room_i] ~= 0 then 
 				dest_room_i = dest_room_i - 4
 			else 
 				break
@@ -277,7 +301,7 @@ function day23_solve(state, movecache, part1)
 		if (finalcost == nil or finalcost > curr_state.cost) and (states[curr_state_key] == nil or (states[curr_state_key] > curr_state.cost)) then 
 			states[curr_state_key] = curr_state.cost
 			for i = 1,#curr_state.positions do 
-				if curr_state.positions[i] ~= '.' then 
+				if curr_state.positions[i] ~= 0 then 
 					local x,y = day23_coord_from_pos(i)
 					local moves = day23_moves(i,curr_state, movecache)
 					for j = 1,#moves do 
@@ -286,12 +310,12 @@ function day23_solve(state, movecache, part1)
 						local newstate = day23_copy_state(curr_state)
 						
 						local cost = movedist
-						local chr = newstate.positions[i]
-						if chr == 'B' then 
+						local amphipod = newstate.positions[i]
+						if amphipod == 2 then 
 							cost = cost * 10 
-						elseif chr == 'C' then 
+						elseif amphipod == 3 then 
 							cost = cost * 100
-						elseif chr == 'D' then 
+						elseif amphipod == 4 then 
 							cost = cost * 1000
 						end
 						day23_move(i, movepos, newstate)
@@ -312,6 +336,7 @@ function day23_solve(state, movecache, part1)
 			end
 		end
 	end
+	
 	return states[finalkey]
 end
 
