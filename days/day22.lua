@@ -184,7 +184,7 @@ function day22_add_child(vol1, vol2, depth, split_depth)
 	-- if the new volume intersects no children
 	local intersections = 0
 	for i = 1, #vol1.children do 
-		if day22_overlap(vol1.children[i], vol2) or day22_overlap(vol2, vol1.children[i]) then 
+		if day22_overlap(vol1.children[i], vol2) then 
 			intersections = intersections + 1
 		end
 	end
@@ -204,9 +204,12 @@ function day22_add_child(vol1, vol2, depth, split_depth)
 	end
 	
 	-- easy options exhausted, now the hard stuff
-	-- across all current children find the first 
-	-- overlapping volume where vol2 can be split
-	-- on a plain so that one 
+	-- across all current children find the first overlapping volume where 
+	-- vol2 can be split into two subvolumes, one entirely outside of the 
+	-- overlapping volume, one at least partly contained within it.
+	-- each subdivided volume is recursively added to the volume tree and 
+	-- split as necessary until everything is an easy case that can be 
+	-- evaluated.
 	for i = 1,#vol1.children do 
 		if day22_overlap(vol1.children[i], vol2) then 
 			local x_plane = day22_intersection_plane_x(vol1.children[i], vol2)
