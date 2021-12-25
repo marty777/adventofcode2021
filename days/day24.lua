@@ -35,25 +35,17 @@ function day24_trunc(val)
 	end
 end
 
-function day24_pow10(val) 
-	-- currently works for me under Lua 5.4, supposedly deprecated in future 
-	return math.floor(math.pow(10, val))
-end
-
-function day24_input(val) 
-	local input = {}
-	for i = 14,1,-1 do 
-		local digit = math.floor(val/day24_pow10(i-1)) % 10
-		table.insert(input,digit)
+function day24_input_str(input) 
+	local ret = ''
+	for i = 1,#input do 
+		ret = ret .. tostring(input[i])
 	end
-	return input
+	return ret
 end
-
 
 function day24_run(prog, inp, registers, limit, start, input_index)
 	
 	local inp_index = input_index == nil and 1 or input_index
-	
 	
 	for i = start ~= nil and start or 1,#prog do 
 		if limit ~= nil and limit == i then 
@@ -117,107 +109,63 @@ function day24_inst(line)
 	return inst
 end
 
--- I'm sure shortcut to the solution exists if you understand what the puzzle program is doing, but I 
--- haven't figured it out yet. I can see that there are steps that increase the value of z, and steps 
--- that reduce it if the input value matches x, and z won't reach zero unless the input is correct
--- on each of the reduction steps. The following works, anyway, but is presumably non-optimal and 
--- not generalized
-function day24_part1(instructions) 
 
-	-- determined by inspection of partial execution, z is low after these positions on my puzzle input
-	-- i don't think this generalizes to other puzzle inputs
-	local k34_x = {{1,4},{2,5},{3,6},{4,7}, {5,4}, {6,9}}
-	local k78_x = {{9,1}}
-	local k1011_x = {{1,3},{2,4}, {3,5}, {4,6}, {5,7}, {6,8}, {7,9}}
-	
-	-- that only leaves 8 digits unknown. How bad can that be to iterate over until a match is found? 
-	-- Take the largest of each predetermined digit group and for all other digits iterate descending
-	for k1 = 9,1,-1 do 
-		for k2 = 9,1,-1 do 
-			for k34 = #k34_x,#k34_x do 
-				for k5 = 9,1,-1 do
-					for k6 = 9,1,-1 do 
-						for k78 = #k78_x,#k78_x do 
-							for k9 = 9,1,-1 do 
-								for k1011 = #k1011_x,#k1011_x do
-									for k12 = 9,1,-1 do 
-										for k13 = 9,1,-1 do
-											for k14 = 9,1,-1 do 
-												local input = {k1,k2,k34_x[k34][1],k34_x[k34][2],k5,k6,k78_x[k78][1], k78_x[k78][2], k9, k1011_x[k1011][1], k1011_x[k1011][2], k12, k13, k14}
-												local r = {w=0,x=0,y=0,z=0} 
-												day24_run(instructions, input, r)
-												if r.z < 1 then 
-													local result = ''
-													
-													for i = 1, #input do 
-														result = result .. tostring(input[i])
-													end
-													return result
-												end
-											end
-										end
-									end
-								end
-							end
-						end
-					end
-				end
+--[[
+Okay, I think I understand how this works. The z register functions as an odd 
+stack, with items added by shifting the stack down by multiplying z by 26 and 
+arithmetically adding the item to z and popped by taking the z mod 26 to obtain 
+the top item and then dividing z by 26 to shift the stack up. The program also 
+includes terms added to the input item when it is popped and pushed.
+
+I don't actually know if 26 is the stack shifting value in every puzzle input 
+or just mine, but this function doesn't assume it.
+
+If (popped previous input) + (current pop term) + (previous push term) isn't 
+equal to the current input, the model number is invalid. This gives upper and 
+lower bounds on what a valid pushed input can be and knowing a pushed input you 
+can determine the valid pop input to go with it. Since the push inputs all 
+appear earlier in the input string than pop inputs, this lets us determine the 
+highest or lowest valid model number.
+--]]
+
+function day24_solve(instructions) 
+	local params = {}
+	local digits = {}
+	local stack = {}
+	for i = 1,#instructions,18 do
+		local digit = math.floor(i/18) + 1
+		local div = instructions[i + 4].b_val
+		local pop_term = instructions[i + 5].b_val
+		local push_term = instructions[i + 15].b_val
+		local is_pushed = div == 1
+		table.insert(params, {is_pushed = is_pushed, pop = pop_term, push = push_term})
+		if is_pushed then 
+			table.insert(stack, #params)
+		else 
+			local pop_index = table.remove(stack, #stack)
+			if pop_term + params[pop_index].push > 0 then 
+				digits[pop_index] = {is_pushed = true, lo = 1, hi = 9-(pop_term + params[pop_index].push)}
+			else 
+				digits[pop_index] = {is_pushed = true, hi = 9, lo = 1 - (pop_term + params[pop_index].push)}
 			end
+			digits[digit] = {is_pushed = false, pop_index = pop_index, term = (pop_term + params[pop_index].push)}
 		end
 	end
 	
-	return 'Not found'
-end
-
-function day24_part2(instructions) 
-
-	-- determined by inspection of partial execution, z is low after these positions on my puzzle input
-	-- i don't think this generalizes to other puzzle inputs
-	local k34_x = {{1,4},{2,5},{3,6},{4,7}, {5,4}, {6,9}}
-	local k78_x = {{9,1}}
-	local k1011_x = {{1,3},{2,4}, {3,5}, {4,6}, {5,7}, {6,8}, {7,9}}
+	local input_lo = {}
+	local input_hi = {}
 	
-	local tries = 0
-	
-	-- Take the smallest of each predetermined digit group and for all other digits iterate ascending
-	-- This is definitely not quick, but it does work.
-	for k1 = 1,9 do 
-		for k2 = 1,9 do 
-			for k34 = 1,1 do 
-				for k5 = 1,9 do
-					for k6 = 1,9 do 
-						for k78 = 1,1 do 
-							for k9 = 1,9 do 
-								for k1011 = 1,1 do
-									for k12 = 1,9 do 
-										for k13 = 1,9 do
-											for k14 = 1,9 do 
-												local input = {k1,k2,k34_x[k34][1],k34_x[k34][2],k5,k6,k78_x[k78][1], k78_x[k78][2], k9, k1011_x[k1011][1], k1011_x[k1011][2], k12, k13, k14}
-												local r = {w=0,x=0,y=0,z=0} 
-												day24_run(instructions, input, r)
-												if r.z < 1 then 
-													local result = ''
-													
-													for i = 1, #input do 
-														result = result .. tostring(input[i])
-													end
-													return result
-												end
-												
-												tries = tries + 1
-											end
-										end
-									end
-								end
-							end
-						end
-					end
-				end
-			end
+	for i = 1,#params do 
+		if digits[i].is_pushed then 
+			input_hi[i] = digits[i].hi
+			input_lo[i] = digits[i].lo
+		else 
+			input_hi[i] = input_hi[digits[i].pop_index] + digits[i].term
+			input_lo[i] = input_lo[digits[i].pop_index] + digits[i].term
 		end
 	end
 	
-	return 'Not found'
+	return day24_input_str(input_hi), day24_input_str(input_lo)
 end
 
 function day24(path) 
@@ -228,10 +176,8 @@ function day24(path)
 		instructions[#instructions + 1] = day24_inst(lines[i])
 	end
 	
-	local part1 = day24_part1(instructions)
+	local part1, part2 = day24_solve(instructions)
 	print(string.format("Part 1: %s", part1))
-	
-	local part2 = day24_part2(instructions)
 	print(string.format("Part 2: %s", part2))
 	
  end
