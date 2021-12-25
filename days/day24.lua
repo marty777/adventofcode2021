@@ -36,7 +36,7 @@ function day24_trunc(val)
 end
 
 function day24_pow10(val) 
-	-- currently works for me under Lua 10.4, supposedly deprecated in future 
+	-- currently works for me under Lua 5.4, supposedly deprecated in future 
 	return math.floor(math.pow(10, val))
 end
 
@@ -47,10 +47,6 @@ function day24_input(val)
 		table.insert(input,digit)
 	end
 	return input
-end
-
-function day24_regstr(registers) 
-	return string.format("w=%d,x=%d,y=%d,z=%d", registers.w, registers.x, registers.y, registers.z)
 end
 
 
@@ -119,18 +115,6 @@ function day24_inst(line)
 		inst.b = b
 	end
 	return inst
-end
-
-function day24_state_key(z,step)
-	return string.format("%d,%d", z,step)
-end
-
-function day24_step_state(start_z,dest_z,digits)
-	local step_state = {z1 = start_z, z2 = dest_z, digits = {}}
-	for d = 1,#digits do 
-		step_state.digits[d] = digits[d]
-	end
-	return step_state
 end
 
 -- I'm sure shortcut to the solution exists if you understand what the puzzle program is doing, but I 
@@ -239,10 +223,8 @@ end
 function day24(path) 
 	local lines = readLines(path)
 	
-	local linescopy = {}
 	local instructions = {}
 	for i = 1, #lines do 
-		linescopy[#linescopy + 1] = lines[i]
 		instructions[#instructions + 1] = day24_inst(lines[i])
 	end
 	
